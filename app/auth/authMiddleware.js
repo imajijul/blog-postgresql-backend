@@ -1,27 +1,40 @@
 import jwt from "jsonwebtoken"
 import { jwt_access_secret } from "../config/config.js"
+import { dbconnect } from "../database/db.js"
 
 export const  authMiddleware = async(req, res, next)=>{
     try{
-        let token = req.cookies.access_token
+        const token = req.cookies.access_token
 
-        if(token){
-            const decode = await jwt.verify(token, jwt_access_secret)
-
-            // set headers
-            req.headers["id"] = decode["id"]
-            req.headers["email"] = decode["email"]
-
-            // req.user = {
-            //     id: decode["id"],
-            //     email: decode["email"]
-            // }
-            next()
-        }else{
-            res.send("unauthorized")
+        if(!token){
+            return res.status(401).json({success: false, message: "Unauthorized"})
         }
+
+        const decodedToken = jwt.verify(token, jwt_access_secret)
+        
+        const userFindQuery =  `SELECT id, email, role FROM users WHERE id=$1`
+        const user = await dbconnect.query(userFindQuery, [decodedToken.id])
+   
+        if(!user.rows[0]){
+            return res.status(404).json({success: false, message: "User not found, Register first"})
+        }
+        // req.user = {
+        //     id: user.rows[0].id,
+        //     email: user.rows[0].email,
+        // }
+
+        req.user= user.rows[0]
+        console.log(req.user)
+        return next()
         
     }catch(err){
-        res.send(err)
+        console.error(err)
+        if(err.name === "TokenExpiredError"){
+        return res.status(401).json({success: false, message: "Token Expired"})
+        }
+
+        return res.status(401).json({success: false, message: "Token Invalid"})
+
+
     }
 }

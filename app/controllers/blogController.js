@@ -68,14 +68,15 @@ export const getAllBlogDetailsController = async(req, res)=>{
 
 export const updateBlogController = async(req, res)=>{
     try {
-        const {id} = req.params
+        const {blogId} = req.params
+
         const {title, description} = req.body
 
-        let blog = await dbconnect.query(`SELECT * FROM blogs WHERE id = $1`, [id])
+        let blog = await dbconnect.query(`SELECT * FROM blogs WHERE id = $1`, [blogId])
 
-        let token = await decodedToken(req, res)
-
-        if(token.id !== blog.rows[0].author){
+        const {id, email} = req.user
+        
+        if(id !== blog.rows[0].author){
             return res.send("user not found")
         }
 

@@ -102,8 +102,8 @@ export const accessRefreshController = async (req, res)=>{
         }
         let decodedToken = await jwt.verify(incomming_refreshToken, jwt_refresh_secret)
 
-        let user_find_query =  `SELECT * FROM users WHERE id=$1 AND email = $2`
-        let user = await dbconnect.query(user_find_query, [decodedToken.id, decodedToken.email])
+        let user_find_query =  `SELECT * FROM users WHERE id=$1`
+        let user = await dbconnect.query(user_find_query, [decodedToken.id])
   
         if(!user.rows[0]){
             return res.send("User not found")
@@ -112,7 +112,7 @@ export const accessRefreshController = async (req, res)=>{
         if(incomming_refreshToken !== user.rows[0].refresh_token){
             res.send("token expired")
         }
-        const newaccess_token = await generateAccessToken(user.rows[0].id, user.rows[0].email)
+        const newaccess_token = await generateAccessToken(user.rows[0].id)
         
         res
         .cookie("access_token", newaccess_token, cookieOptions)
