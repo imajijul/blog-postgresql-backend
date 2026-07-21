@@ -16,42 +16,33 @@ export const createBloConroller = async(req, res)=>{
 export const getSingleBlogController = async(req, res)=>{
     try {
         const {blogId} = req.params
-        const reg_query = `SELECT * FROM blogs WHERE id = $1`
+        const findQuery = `SELECT blogs.id, users.name as authorName, blogs.title, blogs.description FROM blogs INNER JOIN users ON users.id = blogs.author WHERE blogs.id=$1`
 
-        const result = await dbconnect.query(reg_query, [blogId])
+        const result = await dbconnect.query(findQuery, [blogId])
         if(result.rows.length===0){
             return res.status(404).json({success: false, message: "Blog Not Found"})
         }
+
         res.status(200).json({success: true, message: "Your Requested Blog", data: result.rows[0]})
     } catch (err) {
         res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
-// single blog with details
-export const getSingleBlogDetailsController = async(req, res)=>{
-    try {
-        const {id} = req.params
-        const reg_query = `SELECT blogs.id, users.name as authorName, blogs.title, blogs.description FROM blogs INNER JOIN users ON users.id = blogs.author WHERE blogs.id=$1`
-
-        const result = await dbconnect.query(reg_query, [id])
-
-        res.send(result.rows)
-    } catch (err) {
-        res.send(err.message)
-    }
-}
-
-
-
+// All blogs with details
 export const getAllBlogController = async(req, res)=>{
     try {
-        const reg_query = `SELECT * FROM blogs`
+        const findQuery = `SELECT blogs.id, users.name as authorName, blogs.title, blogs.description FROM blogs INNER JOIN users ON users.id = blogs.author`
+        
+        const result = await dbconnect.query(findQuery)
 
-        const result = await dbconnect.query(reg_query)
-        return res.send(result.rows)
+        if(result.rows.length===0){
+            return res.status(404).json({success: false, message: "Blog Not Found"})
+        }
+
+        res.status(200).json({success: true, message: "Your Requested Blog", data: result.rows[0]})
     } catch (err) {
-        return res.send(err.message)
+        res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
