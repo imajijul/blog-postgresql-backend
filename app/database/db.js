@@ -1,5 +1,5 @@
-import { Client } from "pg"
-export const dbconnect = new Client({
+import { Pool } from "pg"
+export const dbconnect = new Pool({
     // host: "localhost",
     // port: 5432,
     // user: "postgres",
