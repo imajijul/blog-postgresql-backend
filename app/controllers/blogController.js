@@ -78,13 +78,13 @@ export const deleteBlogController = async(req, res)=>{
         const findQuery = `SELECT id, author FROM blogs WHERE id= $1`
         const blog = await dbconnect.query(findQuery, [blogId])
 
-        if(!blog.rows[0]){
-            return res.status(404).json({success: false, message: "blog not found"})
+        if(blog.rows.length === 0){
+            return res.status(404).json({success: false, message: "Blog Not Found"})
         }
 
-        if(blog.rows[0].author !== req.user.id && req.user.role !== "admin"){
-            return res.status(403).json({success: false, message: "Forbidden"})
-        }
+        // if(blog.rows[0].author !== req.user.id && req.user.role !== "admin"){
+        //     return res.status(403).json({success: false, message: "Forbidden"})
+        // }
 
         // delete blog if found on db
         const delQuery = `DELETE FROM blogs WHERE id=$1`
