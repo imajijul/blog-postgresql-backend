@@ -40,7 +40,7 @@ export const getAllBlogController = async(req, res)=>{
             return res.status(404).json({success: false, message: "Blog Not Found"})
         }
 
-        res.status(200).json({success: true, message: "Your Requested Blog", data: result.rows[0]})
+        res.status(200).json({success: true, message: "Your Requested Blogs List", data: result.rows})
     } catch (err) {
         res.status(500).json({success: false, message: "Internal Server Error"})
     }
