@@ -145,3 +145,37 @@ export const getAllCommentsController = async(req, res)=>{
         return res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
+
+// like on blog/post
+
+export const likeBlogController = async(req, res)=>{
+    try {
+        const {blogId} = req.params
+        if (isNaN(blogId)) {
+        return res.status(400).json({success: false, message: "Invalid blog id"})
+        }
+
+        // find blog first
+        const blog = await dbconnect.query(`SELECT id FROM blogs WHERE id = $1`, [blogId])
+        if(blog.rows.length===0){
+             return res.status(404).json({success: false, message: "blog not found"})
+        }
+
+        // already liked? -> unlike
+        const liked = await dbconnect.query(`SELECT id FROM likes WHERE blog_id =$1 AND user_id=$2`, [blog.rows[0].id, req.users.id])
+       
+        if(liked.rows.length >0){
+            await dbconnect.query(`DELETE FROM likes WHERE blog_id =$1 AND user_id=$2`, [blog.rows[0].id, req.users.id])
+            const likedBlog = await dbconnect.query(`SELECT COUNT(*) AS total_likes FROM likes WHERE blog_id = $1`, [blog.rows[0].id])
+            return res.status(200).json({success:true, message: "Blog unliked", totalLikes: likedBlog.rows[0].total_likes})
+        }
+        
+        await dbconnect.query(`INSERT INTO likes (blog_id, user_id) VALUES ($1, $2)`, [blog.rows[0].id, req.users.id])
+        const likedBlog = await dbconnect.query(`SELECT COUNT(*) as total_likes FROM likes WHERE blog_id = $1`, [blog.rows[0].id])
+        return res.status(201).json({success:true, message: "Blog liked", totalLikes:likedBlog.rows[0].total_likes})
+
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({success: false, message: "Internal Server Error"})
+    }
+}

@@ -1,5 +1,5 @@
 import express from "express"
-import { commentController, createBloConroller, deleteBlogController, getAllBlogController, getAllCommentsController, getSingleBlogController, updateBlogController} from "../controllers/blogController.js"
+import { commentController, createBloConroller, deleteBlogController, getAllBlogController, getAllCommentsController, getSingleBlogController, likeBlogController, updateBlogController} from "../controllers/blogController.js"
 import { accessRefreshController, loginUserControler, logoutController, registerUserController } from "../controllers/userController.js"
 import { authMiddleware } from "../auth/authMiddleware.js"
 import { authorize } from "../auth/authorize.js"
@@ -21,6 +21,9 @@ router.put("/update-blog/:blogId", authMiddleware, updateBlogController) // upda
 router.delete("/blog/:blogId", authMiddleware, deleteBlogController)
 router.post("/blog/:blogId/comment", authMiddleware, commentController)
 router.get("/blog/:blogId/comments", getAllCommentsController)
+
+// like route
+router.post("/blog/:blogId/like", authMiddleware, likeBlogController)
 
 
 

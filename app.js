@@ -27,9 +27,6 @@ try {
   process.exit(1);
 }
 
-dbconnect.on("error", (err) => {
-  console.error("Unexpected idle client error:", err);
-});
 
 app.listen(3000, (req, res)=>{
     console.log('server starterd')
