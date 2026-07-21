@@ -11,7 +11,7 @@ export const  authMiddleware = async(req, res, next)=>{
         }
 
         const decodedToken = jwt.verify(token, jwt_access_secret)
-        
+ 
         const userFindQuery =  `SELECT id, email, role FROM users WHERE id=$1`
         const user = await dbconnect.query(userFindQuery, [decodedToken.id])
    
@@ -22,9 +22,7 @@ export const  authMiddleware = async(req, res, next)=>{
         //     id: user.rows[0].id,
         //     email: user.rows[0].email,
         // }
-
-        req.user= user.rows[0]
-        console.log(req.user)
+        req.users= user.rows[0]
         return next()
         
     }catch(err){
