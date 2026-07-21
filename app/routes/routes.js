@@ -14,7 +14,7 @@ router.get("/logout", logoutController) // login user
 
 
 // blog routes
-router.post("/create-blog", authMiddleware, authorize('user', 'admin') , createBloConroller) // create blog
+router.post("/create-blog", authMiddleware, createBloConroller) // create blog
 router.get("/blog/:blogId", getSingleBlogController) // read blog by id || single blog
 router.get("/blog-details/:blogId", getSingleBlogDetailsController) // read blog by id with details|| single blog
 router.get("/blogs", getAllBlogController) // read all blogs

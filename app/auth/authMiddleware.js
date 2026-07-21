@@ -14,7 +14,7 @@ export const  authMiddleware = async(req, res, next)=>{
  
         const userFindQuery =  `SELECT id, email, role FROM users WHERE id=$1`
         const user = await dbconnect.query(userFindQuery, [decodedToken.id])
-   
+
         if(!user.rows[0]){
             return res.status(404).json({success: false, message: "User not found, Register first"})
         }

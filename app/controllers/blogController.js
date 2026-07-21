@@ -5,11 +5,11 @@ export const createBloConroller = async(req, res)=>{
     try{
         const {title, description} = req.body
         const reg_query = `INSERT INTO blogs (title, description, author) VALUES ($1, $2, $3) RETURNING *`
-        const authorId = req.headers["id"]
+        const authorId = req.users["id"]
         const result = await dbconnect.query(reg_query, [title, description, authorId])
-        res.send(result.rows)
+        return res.status(201).json({success: true, message: "blog created successfull", data: result.rows[0]})
     }catch(err){
-        res.send(err.message)
+        return res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
@@ -19,10 +19,12 @@ export const getSingleBlogController = async(req, res)=>{
         const reg_query = `SELECT * FROM blogs WHERE id = $1`
 
         const result = await dbconnect.query(reg_query, [blogId])
-
-        res.send(result.rows[0])
+        if(result.rows.length===0){
+            return res.status(404).json({success: false, message: "Blog Not Found"})
+        }
+        res.status(200).json({success: true, message: "Your Requested Blog", data: result.rows[0]})
     } catch (err) {
-        res.send(err.message)
+        res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
