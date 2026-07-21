@@ -32,14 +32,14 @@ export const getSingleBlogController = async(req, res)=>{
 // All blogs with details
 export const getAllBlogController = async(req, res)=>{
     try {
+
         const findQuery = `SELECT blogs.id, users.name as authorName, blogs.title, blogs.description FROM blogs INNER JOIN users ON users.id = blogs.author`
-        
+
         const result = await dbconnect.query(findQuery)
 
         if(result.rows.length===0){
             return res.status(404).json({success: false, message: "Blog Not Found"})
         }
-
         res.status(200).json({success: true, message: "Your Requested Blogs List", data: result.rows})
     } catch (err) {
         res.status(500).json({success: false, message: "Internal Server Error"})
@@ -47,37 +47,21 @@ export const getAllBlogController = async(req, res)=>{
 }
 
 
-// INNER JOIN
-export const getAllBlogDetailsController = async(req, res)=>{
-    try {
-        const reg_query = `SELECT blogs.id as blogid, title, description, name as author FROM blogs INNER JOIN users ON users.id = blogs.author`
-
-        const result = await dbconnect.query(reg_query)
-        return res.send(result.rows)
-    } catch (err) {
-        return res.send(err.message)
-    }
-}
-
+// update blog by id
 export const updateBlogController = async(req, res)=>{
     try {
         const {blogId} = req.params
-
         const {title, description} = req.body
 
         let blog = await dbconnect.query(`SELECT * FROM blogs WHERE id = $1`, [blogId])
-
-        const {id, email} = req.user
-        
-        if(id !== blog.rows[0].author){
-            return res.send("user not found")
+        if(blog.rows.length===0){
+            return res.status(404).json({success: false, message: "Blog Not Found"})
         }
-
-        const update_query = `UPDATE blogs SET title = $1, description= $2 WHERE id = $3 AND author = $4 RETURNING *`
-        const result = await dbconnect.query(update_query, [title, description, id, blog.rows[0].author])
-        return res.send(result.rows)
+        const update_query = `UPDATE blogs SET title = $1, description= $2 WHERE id = $3 AND author = $4`
+        const result = await dbconnect.query(update_query, [title, description, blogId, blog.rows[0].author])
+        res.status(200).json({success: true, message: "Blog updated successfully"})
     } catch (err) {
-        return res.send(err.message)
+        res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
