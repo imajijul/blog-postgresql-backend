@@ -13,6 +13,7 @@ export const createBloConroller = async(req, res)=>{
     }
 }
 
+// get blogs with details and views count
 export const getSingleBlogController = async(req, res)=>{
     try {
         const {blogId} = req.params
@@ -23,7 +24,9 @@ export const getSingleBlogController = async(req, res)=>{
             return res.status(404).json({success: false, message: "Blog Not Found"})
         }
 
-        res.status(200).json({success: true, message: "Your Requested Blog", data: result.rows[0]})
+        const blog = await dbconnect.query(`UPDATE blogs SET views = views+1 WHERE id = $1 RETURNING id, title, description, views`, [blogId])
+
+        res.status(200).json({success: true, message: "Your Requested Blog", data: blog.rows[0]})
     } catch (err) {
         res.status(500).json({success: false, message: "Internal Server Error"})
     }

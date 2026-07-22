@@ -5,4 +5,3 @@ CREATE TABLE likes(
 	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	UNIQUE(blog_id, user_id)
 )
-
