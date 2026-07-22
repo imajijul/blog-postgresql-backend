@@ -17,18 +17,24 @@ export const createBloConroller = async(req, res)=>{
 export const getSingleBlogController = async(req, res)=>{
     try {
         const {blogId} = req.params
-        const findQuery = `SELECT blogs.id, users.name as authorName, blogs.title, blogs.description FROM blogs INNER JOIN users ON users.id = blogs.author WHERE blogs.id=$1`
 
+        const findQuery = `SELECT id FROM blogs WHERE id = $1`
         const result = await dbconnect.query(findQuery, [blogId])
+
         if(result.rows.length===0){
             return res.status(404).json({success: false, message: "Blog Not Found"})
         }
 
-        const blog = await dbconnect.query(`UPDATE blogs SET views = views+1 WHERE id = $1 RETURNING id, title, description, views`, [blogId])
+        // update total views = vies+1
+        await dbconnect.query(`UPDATE blogs SET views = views+1 WHERE id = $1`, [blogId])
+        
+        // get blog details with updated data
+        const updatedData = await dbconnect.query(`SELECT blogs.id, users.name as authorName, blogs.title, blogs.description, blogs.views FROM blogs INNER JOIN users ON users.id = blogs.author WHERE blogs.id=$1`, [blogId])
 
-        res.status(200).json({success: true, message: "Your Requested Blog", data: blog.rows[0]})
+        return res.status(200).json({success: true, message: "Your Requested Blog", data: updatedData.rows[0]})
     } catch (err) {
-        res.status(500).json({success: false, message: "Internal Server Error"})
+        console.error(err)
+        return res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
