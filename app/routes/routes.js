@@ -1,8 +1,9 @@
 import express from "express"
 import { commentController, createBloConroller, deleteBlogController, getAllBlogController, getAllCommentsController, getSingleBlogController, likeBlogController, updateBlogController} from "../controllers/blogController.js"
 import { accessRefreshController, loginUserControler, logoutController, registerUserController } from "../controllers/userController.js"
-import { authMiddleware } from "../auth/authMiddleware.js"
-import { authorize } from "../auth/authorize.js"
+import { authMiddleware } from "../middleware/authMiddleware.js"
+import { authorize } from "../middleware/authorize.js"
+import upload from "../middleware/multer.js"
 
 const router = express.Router()
 
@@ -14,7 +15,7 @@ router.get("/logout", logoutController) // login user
 
 
 // blog routes
-router.post("/create-blog", authMiddleware, createBloConroller) // create blog
+router.post("/create-blog", upload.single('image'), authMiddleware, createBloConroller) // create blog
 router.get("/blog/:blogId", getSingleBlogController) // read blog by id || single blog
 router.get("/blogs", getAllBlogController) // read all blogs
 router.put("/update-blog/:blogId", authMiddleware, updateBlogController) // update a blog 

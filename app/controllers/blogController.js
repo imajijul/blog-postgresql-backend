@@ -1,12 +1,14 @@
 import { dbconnect } from "../database/db.js"
 import {decodedToken} from "../utility/tokenUtility.js"
+import fs from "fs"
 
 export const createBloConroller = async(req, res)=>{
     try{
+        const {filename} = req.file
         const {title, description} = req.body
-        const reg_query = `INSERT INTO blogs (title, description, author) VALUES ($1, $2, $3) RETURNING *`
+        const reg_query = `INSERT INTO blogs (title, description, author, banner) VALUES ($1, $2, $3, $4) RETURNING *`
         const authorId = req.users["id"]
-        const result = await dbconnect.query(reg_query, [title, description, authorId])
+        const result = await dbconnect.query(reg_query, [title, description, authorId, filename])
         return res.status(201).json({success: true, message: "blog created successfull", data: result.rows[0]})
     }catch(err){
         return res.status(500).json({success: false, message: "Internal Server Error"})
@@ -84,7 +86,7 @@ export const deleteBlogController = async(req, res)=>{
         }
 
         // find blog on db
-        const findQuery = `SELECT id, author FROM blogs WHERE id= $1`
+        const findQuery = `SELECT id, author, banner FROM blogs WHERE id= $1`
         const blog = await dbconnect.query(findQuery, [blogId])
 
         if(blog.rows.length === 0){
@@ -98,6 +100,13 @@ export const deleteBlogController = async(req, res)=>{
         // delete blog if found on db
         const delQuery = `DELETE FROM blogs WHERE id=$1`
         await dbconnect.query(delQuery, [blog.rows[0].id])
+        
+        if(blog.rows[0].banner != null){
+            const exactPath = `./app/uploads/${blog.rows[0].banner}`
+            if(fs.existsSync(exactPath)){
+                fs.unlinkSync(exactPath)
+            }
+        }
         return res.status(200).json({success: true, message: "blog deletion succefull"})
     } catch (err) {
         return res.status(500).json({success: false, message: "Internal Server Error"})
