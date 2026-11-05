@@ -1,6 +1,6 @@
 import express from "express"
 import { commentController, createBloConroller, deleteBlogController, getAllBlogController, getAllCommentsController, getSingleBlogController, likeBlogController, updateBlogController} from "../controllers/blogController.js"
-import { accessRefreshController, loginUserControler, logoutController, registerUserController } from "../controllers/userController.js"
+import {loginUserControler, registerUserController } from "../controllers/userController.js"
 import { authMiddleware } from "../middleware/authMiddleware.js"
 import { authorize } from "../middleware/authorize.js"
 import upload from "../middleware/multer.js"
@@ -9,8 +9,8 @@ const router = express.Router()
 
 // user routes
 router.post("/register-user", registerUserController) // register user
-router.get("/login", loginUserControler) // login user
-router.get("/logout", logoutController) // login user
+router.post("/login", loginUserControler) // login user
+// router.get("/logout", logoutController) // login user
 
 
 
@@ -26,9 +26,5 @@ router.get("/blog/:blogId/comments", getAllCommentsController)
 // like route
 router.post("/blog/:blogId/like", authMiddleware, likeBlogController)
 
-
-
-// refresh token
-router.get("/refresh-token", accessRefreshController)
 
 export default router

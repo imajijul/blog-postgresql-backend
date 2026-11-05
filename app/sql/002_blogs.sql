@@ -5,3 +5,6 @@ CREATE TABLE blogs(
 	author INT NOT NULL REFERENCES users(id),
 	created_at TIMESTAMP NOT NULL DEFAULT NOW()
 )
+
+
+select * from blogs

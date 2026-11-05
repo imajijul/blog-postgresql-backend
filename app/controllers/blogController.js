@@ -6,11 +6,16 @@ export const createBloConroller = async(req, res)=>{
     try{
         const {filename} = req.file
         const {title, description} = req.body
+
+        console.log(req.users)
         const reg_query = `INSERT INTO blogs (title, description, author, banner) VALUES ($1, $2, $3, $4) RETURNING *`
+
         const authorId = req.users["id"]
         const result = await dbconnect.query(reg_query, [title, description, authorId, filename])
+    
         return res.status(201).json({success: true, message: "blog created successfull", data: result.rows[0]})
     }catch(err){
+        console.log(err)
         return res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
@@ -31,7 +36,7 @@ export const getSingleBlogController = async(req, res)=>{
         await dbconnect.query(`UPDATE blogs SET views = views+1 WHERE id = $1`, [blogId])
         
         // get blog details with updated data
-        const updatedData = await dbconnect.query(`SELECT blogs.id, users.name as authorName, blogs.title, blogs.description, blogs.views FROM blogs INNER JOIN users ON users.id = blogs.author WHERE blogs.id=$1`, [blogId])
+        const updatedData = await dbconnect.query(`SELECT blogs.id, users.name as authorName, blogs.title, blogs.description, blogs.banner, blogs.views FROM blogs INNER JOIN users ON users.id = blogs.author WHERE blogs.id=$1`, [blogId])
 
         return res.status(200).json({success: true, message: "Your Requested Blog", data: updatedData.rows[0]})
     } catch (err) {
@@ -43,17 +48,16 @@ export const getSingleBlogController = async(req, res)=>{
 // All blogs with details
 export const getAllBlogController = async(req, res)=>{
     try {
-
-        const findQuery = `SELECT blogs.id, users.name as authorName, blogs.title, blogs.description FROM blogs INNER JOIN users ON users.id = blogs.author`
+        const findQuery = `SELECT blogs.id, users.name as authorName, blogs.title, blogs.description, blogs.banner , blogs.views FROM blogs INNER JOIN users ON users.id = blogs.author`
 
         const result = await dbconnect.query(findQuery)
 
         if(result.rows.length===0){
             return res.status(404).json({success: false, message: "Blog Not Found"})
         }
-        res.status(200).json({success: true, message: "Your Requested Blogs List", data: result.rows})
+        return res.status(200).json({success: true, message: "Your Requested Blogs List", data: result.rows})
     } catch (err) {
-        res.status(500).json({success: false, message: "Internal Server Error"})
+        return res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
@@ -70,9 +74,9 @@ export const updateBlogController = async(req, res)=>{
         }
         const update_query = `UPDATE blogs SET title = $1, description= $2 WHERE id = $3 AND author = $4`
         const result = await dbconnect.query(update_query, [title, description, blogId, blog.rows[0].author])
-        res.status(200).json({success: true, message: "Blog updated successfully"})
+        return res.status(200).json({success: true, message: "Blog updated successfully"})
     } catch (err) {
-        res.status(500).json({success: false, message: "Internal Server Error"})
+        return res.status(500).json({success: false, message: "Internal Server Error"})
     }
 }
 
@@ -165,10 +169,10 @@ export const getAllCommentsController = async(req, res)=>{
 }
 
 // like on blog/post
-
 export const likeBlogController = async(req, res)=>{
     try {
         const {blogId} = req.params
+
         if (isNaN(blogId)) {
         return res.status(400).json({success: false, message: "Invalid blog id"})
         }
@@ -184,13 +188,21 @@ export const likeBlogController = async(req, res)=>{
        
         if(liked.rows.length >0){
             await dbconnect.query(`DELETE FROM likes WHERE blog_id =$1 AND user_id=$2`, [blog.rows[0].id, req.users.id])
-            const likedBlog = await dbconnect.query(`SELECT COUNT(*) AS total_likes FROM likes WHERE blog_id = $1`, [blog.rows[0].id])
-            return res.status(200).json({success:true, message: "Blog unliked", totalLikes: likedBlog.rows[0].total_likes})
+
+            // const likedBlog = await dbconnect.query(`SELECT COUNT(*) AS total_likes FROM likes WHERE blog_id = $1`, [blog.rows[0].id])
+            // await dbconnect.query(`UPDATE blogs SET totallikes=$1 WHERE id = $2`, [Number(likedBlog.rows[0].total_likes), blog.rows[0].id])
+
+            await dbconnect.query(`UPDATE blogs SET totallikes=totallikes-1 WHERE id = $1`, [blog.rows[0].id])
+            return res.status(200).json({success:true, message: "Blog unliked"})
         }
         
         await dbconnect.query(`INSERT INTO likes (blog_id, user_id) VALUES ($1, $2)`, [blog.rows[0].id, req.users.id])
-        const likedBlog = await dbconnect.query(`SELECT COUNT(*) as total_likes FROM likes WHERE blog_id = $1`, [blog.rows[0].id])
-        return res.status(201).json({success:true, message: "Blog liked", totalLikes:likedBlog.rows[0].total_likes})
+
+        // const likedBlog = await dbconnect.query(`SELECT COUNT(*) as total_likes FROM likes WHERE blog_id = $1`, [blog.rows[0].id])
+        // await dbconnect.query(`UPDATE blogs SET totallikes=$1 WHERE id = $2`, [Number(likedBlog.rows[0].total_likes), blog.rows[0].id])
+
+        await dbconnect.query(`UPDATE blogs SET totallikes=totallikes+1 WHERE id = $1`, [blog.rows[0].id])
+        return res.status(201).json({success:true, message: "Blog liked"})
 
     } catch (err) {
         console.error(err)

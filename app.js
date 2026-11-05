@@ -7,7 +7,10 @@ import cookieParser from 'cookie-parser'
 
 const app = express()
 
-app.use(Cors())
+app.use(Cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+}))
 app.use(bodyParser.json({urlencoded: true}))
 app.use(cookieParser())
 app.use("/api", router)
@@ -28,6 +31,6 @@ try {
 }
 
 
-app.listen(3000, (req, res)=>{
+app.listen(3001, (req, res)=>{
     console.log('server starterd')
 })
